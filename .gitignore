@@ -1,0 +1,17 @@
+# Ignorar archivos del sistema operativo
+.DS_Store
+
+# Ignorar entornos virtuales
+venv/
+.env
+
+# Ignorar archivos de Python
+*.pyc
+__pycache__/
+
+# Ignorar archivos de Jupyter Notebook
+*.ipynb
+.ipynb_checkpoints/
+
+# Ignorar archivos de datos grandes
+*.csv
