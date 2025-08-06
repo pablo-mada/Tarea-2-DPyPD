@@ -2,7 +2,7 @@ import requests
 import json
 
 # URL de la API local 
-API_URL = "https://maternal-health-risk-api.onrender.com/"
+API_URL = "https://maternal-health-risk-api.onrender.com/predict"
 
 # 1. Definir al menos tres payloads distintos para enviar a la API
 
