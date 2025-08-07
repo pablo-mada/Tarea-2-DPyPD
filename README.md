@@ -115,3 +115,7 @@ Para ejecutar el script, navega al directorio del proyecto y ejecuta el siguient
    ```bash
    python client.py
    ```
+
+Como resultado, se mostrarán las respuestas de las tres peticiones realizadas, incluyendo el nivel de riesgo predicho para cada caso.
+
+![Peticiones](reports/peticiones.png)
