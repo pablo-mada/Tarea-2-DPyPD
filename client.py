@@ -1,63 +1,154 @@
+#client.py
 import requests
 import json
+from typing import Dict, Any
+
 
 # URL de la API local 
+
 API_URL = "https://maternal-health-risk-api.onrender.com/predict"
-
-# 1. Definir al menos tres payloads distintos para enviar a la API
-
-# Los datos corresponden:
- 
-#Age - Age in years when a woman is pregnant (int64)
-#SystolicBP - Upper value of Blood Pressure in mmHg (int64)
-#DiastolicBP - Lower value of Blood Pressure in mmHg (int64)
-#BS - Blood glucose levels is in terms of a molar concentration, mmol/L (float64)
-#BodyTemp - Body temperature in Celsius (float64)
-#HeartRate - Resting heart rate in beats per minute (int64)
-#RiskLevel - Predicted Risk Intensity Level during pregnancy ['high risk', 'mid risk', 'low risk']
+#API_URL = "http://127.0.0.1:8000/predict"
 
 
-payloads = [
-    {
-      "Age": 25,         # Baja edad
-      "SystolicBP": 120,   # Presión normal
-      "DiastolicBP": 80,   # Presión normal
-      "BS": 7.5,           # Glucosa normal
-      "BodyTemp": 36.8,    # Temperatura normal
-      "HeartRate": 75      # Ritmo cardíaco normal
-    },
-    {
-      "Age": 45,         # Alta edad
-      "SystolicBP": 145,   # Presión alta
-      "DiastolicBP": 95,   # Presión alta
-      "BS": 10.0,          # Glucosa alta
-      "BodyTemp": 38.6,   # Fiebre
-      "HeartRate": 105     # Ritmo cardíaco alto
-    },
-    {
-      "Age": 32,         # Edad intermedia
-      "SystolicBP": 130,   # Presión limítrofe
-      "DiastolicBP": 85,   # Presión limítrofe
-      "BS": 8.2,           # Glucosa limítrofe
-      "BodyTemp": 37.2,    # Temperatura limítrofe
-      "HeartRate": 88      # Ritmo cardíaco limítrofe
-    }
-]
+# 1. Definir función predicción con al menos tres payloads distintos para enviar a la API
 
-# 2. Iterar sobre los payloads y enviar las peticiones
-for i, payload in enumerate(payloads):
-    print(f"\n--- Petición {i + 1} ---")
-    print("Enviando datos:")
+def make_prediction(payload: Dict[str, Any], test_name: str):
+    """
+    Realiza una predicción individual con manejo de errores
+    
+    Args:
+        payload: Datos a enviar a la API
+        test_name: Nombre descriptivo del test
+    """
+    print(f"\n{'='*50}")
+    print(f"🧪 {test_name}")
+    print(f"{'='*50}")
+    print("📤 Enviando datos:")
     print(json.dumps(payload, indent=2))
     
-    # Enviar la petición POST
     try:
-        response = requests.post(API_URL, json=payload)
-        response.raise_for_status()  # Lanza una excepción si el status es 4xx o 5xx
+        # Enviar la petición POST con timeout
+        response = requests.post(API_URL, json=payload, timeout=30)
         
-        # 3. Mostrar los resultados obtenidos
-        print(f"\nRespuesta del servidor (Status Code: {response.status_code}):")
-        print(json.dumps(response.json(), indent=2))
+        # Mostrar información de la respuesta
+        print(f"\n📊 Status Code: {response.status_code}")
         
+        if response.status_code == 200:
+            # Predicción exitosa
+            result = response.json()
+            print("✅ Predicción exitosa!")
+            print("📋 Resultado:")
+            print(json.dumps(result, indent=2))
+            
+        else:
+            # Error en la respuesta
+            print("❌ Error en la predicción")
+            try:
+                error_detail = response.json()
+                print("💬 Detalle del error:")
+                print(json.dumps(error_detail, indent=2))
+            except json.JSONDecodeError:
+                print(f"💬 Respuesta del servidor: {response.text}")
+        
+        return response
+    # Manejo de errores
+    except requests.exceptions.Timeout:
+        print("⏰ Error: Tiempo de espera agotado")
+    except requests.exceptions.ConnectionError:
+        print("🔌 Error: No se pudo conectar con la API")
     except requests.exceptions.RequestException as e:
-        print(f"\nError en la petición: {e}")
+        print(f"🚫 Error en la petición: {e}")
+    except json.JSONDecodeError:
+        print("📄 Error: Respuesta no válida del servidor")
+    except Exception as e:
+        print(f"💥 Error inesperado: {e}")
+    
+    return None
+
+
+# 2. Función principal que ejecuta todos los tests
+
+def main():
+    print("🏥 CLIENTE DE PRUEBAS - API DE RIESGO DE SALUD MATERNA")
+    print("=" * 60)
+    
+    # Casos de prueba válidos
+    valid_payloads = [
+        {
+            "payload": {
+                "Age": 25,
+                "SystolicBP": 120,
+                "DiastolicBP": 80,
+                "BS": 7.5,
+                "BodyTemp": 36.8,
+                "HeartRate": 75
+            },
+            "test_name": "CASO 1: Perfil de Bajo Riesgo (Valores Normales)"
+        },
+        {
+            "payload": {
+                "Age": 45,
+                "SystolicBP": 160,
+                "DiastolicBP": 100,
+                "BS": 15.0,
+                "BodyTemp": 38.5,
+                "HeartRate": 110
+            },
+            "test_name": "CASO 2: Perfil de Alto Riesgo (Múltiples Factores)"
+        },
+        {
+            "payload": {
+                "Age": 22,
+                "SystolicBP": 85,
+                "DiastolicBP": 60,
+                "BS": 6.9,
+                "BodyTemp": 37.3,
+                "HeartRate": 76
+            },
+            "test_name": "CASO 3: Perfil de Riesgo Intermedio (Valores Limítrofes)"
+        }
+    ]
+    
+    # Casos de prueba con errores, para probar validaciones
+    invalid_payloads = [
+        {
+            "payload": {
+                "Age": -5,  # Edad negativa
+                "SystolicBP": 120,
+                "DiastolicBP": 80,
+                "BS": 7.5,
+                "BodyTemp": 36.8,
+                "HeartRate": 75
+            },
+            "test_name": "CASO 4: Error - Edad Negativa (Prueba de Validación)"
+        },
+        {
+            "payload": {
+                "Age": 30,
+                "SystolicBP": 90,
+                "DiastolicBP": 110,  # Diastólica mayor que sistólica
+                "BS": 7.5,
+                "BodyTemp": 36.8,
+                "HeartRate": 75
+            },
+            "test_name": "CASO 5: Error - Presión Diastólica > Sistólica (Prueba de Validación)"
+        }
+    ]
+    
+    # Ejecutar casos válidos
+    print(f"\n{'🟢 EJECUTANDO CASOS VÁLIDOS':^60}")
+    for test_case in valid_payloads:
+        make_prediction(test_case["payload"], test_case["test_name"])
+    
+    # Ejecutar casos con errores
+    print(f"\n{'🔴 EJECUTANDO CASOS DE ERROR (PRUEBAS DE VALIDACIÓN)':^60}")
+    for test_case in invalid_payloads:
+        make_prediction(test_case["payload"], test_case["test_name"])
+    
+    print(f"\n{'='*60}")
+    print("🏁 PRUEBAS COMPLETADAS")
+    print("📋 Revisa los resultados arriba para verificar el comportamiento de la API")
+    print("=" * 60)
+
+if __name__ == "__main__":
+    main()
