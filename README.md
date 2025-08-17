@@ -2,7 +2,7 @@
 
 ## Despliegue de un Modelo de Predicción de Riesgo en el Embarazo
 
-Este repositorio contiene una API, construida con FastAPI, para predecir el nivel de riesgo en el embarazo (`High Risk`, `Mid Risk`, `Low Risk`) a partir de datos de salud de la paciente. El modelo de Machine Learning fue entrenado previamente y se despliega como un servicio web accesible a través de la web. La API estará desplegada en Render.
+Este repositorio contiene una API, construida con FastAPI, para predecir el nivel de riesgo en el embarazo (`High Risk`, `Mid Risk`, `Low Risk`) a partir de datos de salud de la paciente. El modelo de Machine Learning fue entrenado previamente y se despliega como un servicio web. La API estará desplegada en Render.
 
 ### I. Puesta en Marcha del Proyecto:
 
@@ -11,6 +11,7 @@ Para ejecutar este proyecto de manera local, sigue estos sencillos pasos:
 1. **Clonar el repositorio**:
    ```bash
    git clone https://github.com/pablo-mada/Tarea-2-DPyPD.git
+
    cd Tarea-2-DPyPD
    ```
 
@@ -81,11 +82,20 @@ Se espera un objeto JSON con las siguientes claves y tipos de datos:
 
 
 
-**Ejemplo en bash con curl:**
+**Ejemplo con curl:**
+
+Abre otra ventana de la consola en la ubicación del proyecto, con el entorno activado y ejecuta lo siguiente:
+
 ```bash
 curl -X POST "https://maternal-health-risk-api.onrender.com/predict" \
      -H "Content-Type: application/json" \
      -d '{"Age": 23, "SystolicBP": 130, "DiastolicBP": 70, "BS": 7.0, "BodyTemp": 37.0, "HeartRate": 78}'
+```
+
+Se debería obtener como respuesta:
+
+```bash
+{"risk_level_predicted":"Mid Risk"}
 ```
 
 ### V. API Desplegada en Render
@@ -122,7 +132,7 @@ URL de la API: [\[URL pública de tu API en Render\]](https://maternal-health-ri
 
 Para verificar que la API funciona correctamente, puedes ejecutar el script `client.py` provisto en este repositorio. Este script realiza tres peticiones validas y dos con errores a la API desplegada y muestra las entradas y salidas correspondientes.
 
-Para ejecutar el script, navega al directorio del proyecto y ejecuta el siguiente comando:
+Para ejecutar el script, navega al directorio del proyecto con el entorno activado y ejecuta el siguiente comando:
    ```bash
    python client.py
    ```
